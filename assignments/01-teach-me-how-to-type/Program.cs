@@ -19,9 +19,12 @@ namespace TypeTeacher
 
             while(true) {
                 PrintText();
-
                 Entry entry = new Entry();
-                entry.SelectText();
+                Console.WriteLine("Select Language: English (1) Russian (other key)");
+                char inputLanguage = Console.ReadKey().KeyChar;
+                entry.SetLangage(inputLanguage == '1' ? 1 : 0);
+                
+                entry.SetText();
                 entry.PrintText();
                 DateTime startedAt = DateTime.Now;
                 string userText = Console.ReadLine();
