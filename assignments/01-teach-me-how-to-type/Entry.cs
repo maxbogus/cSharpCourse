@@ -111,9 +111,9 @@ namespace TypeTeacher
                 }
             }
 
-            Console.WriteLine($"{errors} {ActualText.Length} {text.Length} {TotalTime.TotalSeconds}");
+            Console.WriteLine($"{errors} {ActualText.Length} {text.Length} {(int)TotalTime.TotalSeconds}");
 
-            EntryStat = new Stat (errors, TotalTime, text.Length);
+            EntryStat = new Stat (errors, TotalTime, ActualText.Length);
         }
 
         public void PrintStats()
@@ -188,7 +188,7 @@ namespace TypeTeacher
                 average = total / attempts;
             }
 
-            Console.WriteLine($"You had {attempts} attempts, the average speed was {average} cpm, the best was {max} cpm, the worst was {min} cpm");
+            Console.WriteLine($"You had {attempts} attempts, the average speed was {average} cps, the best was {max} cps, the worst was {min} cps.");
         }
     }
 }
