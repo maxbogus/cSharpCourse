@@ -5,12 +5,25 @@ namespace TypeTeacher
         Russian
     }
 
-    class Entry
+    struct Stat {
+        public int Errors {get; init;}
+        public TimeSpan Time {get; init;}
+        public int Total {get; init;}
+
+        public Stat(int errors, TimeSpan time, int total) {
+            Errors = errors;
+            Time = time;
+            Total = total;
+        }
+    }
+
+    class Session
     {
         public int TextId { get; private set; }
         public string ActualText { get; private set; }
         public TimeSpan TotalTime { get; private set; }
         public Language CurrentLanguage { get; private set; }
+        public Stat EntryStat { get; private set; }
 
         private static readonly Dictionary<Language, string> firstSegment = new Dictionary<Language, string>()
         {
@@ -67,13 +80,7 @@ namespace TypeTeacher
             Console.WriteLine(dictionary[TextId][CurrentLanguage]);
         }
 
-        public void PrintStats()
-        {
-            Console.WriteLine("Your text is:");
-            Console.WriteLine(ActualText);
-            Console.WriteLine("Your time was:");
-            Console.WriteLine(TotalTime);
-
+        public void CalculateStats() {
             int errors = 0;
 
             Dictionary<char, List<int>> originText = new Dictionary<char, List<int>>();
@@ -104,10 +111,84 @@ namespace TypeTeacher
                 }
             }
 
+            Console.WriteLine($"{errors} {ActualText.Length} {text.Length} {TotalTime.TotalSeconds}");
+
+            EntryStat = new Stat (errors, TotalTime, text.Length);
+        }
+
+        public void PrintStats()
+        {
+            Console.WriteLine("Your text is:");
+            Console.WriteLine(ActualText);
+            Console.WriteLine("Your time was:");
+            Console.WriteLine(TotalTime);
             Console.WriteLine("Errors: ");
-            Console.WriteLine(errors);
+            Console.WriteLine(EntryStat.Errors);
             Console.WriteLine("Speed of correct text: ");
-            Console.WriteLine((ActualText.Length - errors) / (int) TotalTime.TotalSeconds);
+            Console.WriteLine((EntryStat.Total - EntryStat.Errors) / (int) TotalTime.TotalSeconds);
+        }
+    }
+
+    class Game {
+        public List<Stat> statistics = new List<Stat>();
+
+        public void Introduction() {
+            Console.WriteLine("Let's check your writing skills!");
+            Console.WriteLine("After you hit key timer initiated and your task is to write the text that will be shown above.");
+            Console.WriteLine("Hit enter to go!");
+            Console.ReadLine();
+        }
+
+        public void Train() {
+            Session entry = new Session();
+            Console.WriteLine("Select Language: English (1) Russian (other key)");
+            char inputLanguage = Console.ReadKey().KeyChar;
+            entry.SetLangage(inputLanguage == '1' ? 1 : 0);
+
+            entry.SetText();
+            entry.PrintText();
+            DateTime startedAt = DateTime.Now;
+            string userText = Console.ReadLine();
+            entry.SetUserInput(userText);
+            TimeSpan span = DateTime.Now - startedAt;
+            entry.SetTime(span);
+            entry.CalculateStats();
+            entry.PrintStats();
+            
+            statistics.Add(entry.EntryStat);
+        }
+
+        public void OverallStats()
+        {
+            int attempts = statistics.Count;
+            int total = 0;
+            int min = -1;
+            int max = -1;
+            foreach(var stat in statistics) {
+                int cpm = (stat.Total - stat.Errors) / (int) stat.Time.TotalSeconds;
+                if (min == -1) {
+                    min = cpm;
+                } else {
+                    if (min > cpm) {
+                        min = cpm;
+                    }
+                }
+                if (max == -1) {
+                    max = cpm;
+                } else {
+                    if (max < cpm) {
+                        min = cpm;
+                    }   
+                }
+                total += cpm;
+            }
+
+            int average = 0;
+            if (attempts > 0) {
+                average = total / attempts;
+            }
+
+            Console.WriteLine($"You had {attempts} attempts, the average speed was {average} cpm, the best was {max} cpm, the worst was {min} cpm");
         }
     }
 }
